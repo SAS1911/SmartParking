@@ -11,6 +11,7 @@ import modelo.reservas.EstadoValidez;
 import modelo.reservas.Reserva;
 import modelo.reservas.Reservas;
 import modelo.reservas.solicitudesreservas.SolicitudReserva;
+import modelo.reservas.solicitudesreservas.SolicitudReservaAnticipada;
 import modelo.vehiculos.Vehiculo;
 import anotacion.Programacion2;
 
@@ -45,51 +46,49 @@ public class ControladorReservas {
 
 	//TO-DO alumno obligatorio
 
+	//CONSTRUCTOR
 	public ControladorReservas(int[][] plazas, double[][] precios) {
-		//HECHO?
-		registroReservas = new Reservas(); //INICIALIZAMOS registro vacío
-		gestorLocalidad = new GestorLocalidad(plazas, precios); //INICIALIZAMOS gestor con las plazas y los precios
+		registroReservas = new Reservas(); //Inicializamos registro vacío
+		gestorLocalidad = new GestorLocalidad(plazas, precios); //Inizcializamos gestor con las plazas y los precios
 	}
 
 
 	//PRE: la solicitud es válida
 	public int hacerReserva(SolicitudReserva solicitud) throws SolicitudReservaInvalida {
-		//HECHO?
+		int numReserva = -1;
 		if(!solicitud.esValida(gestorLocalidad)) {//En caso de ser inválida la solicitud
 			throw new SolicitudReservaInvalida ("Lo sentimos, su reserva es Inválida");//Lanzamos la excepción
 		}
-		solicitud.gestionarSolicitudReserva(gestorLocalidad);//GESTIONAMOS la solicitud
-		if(solicitud.getHueco()!=null){//Una vez gestionada se comprueba si se ha podido ASIGNAR UN HUECO 
-			return registroReservas.registrarReserva(solicitud);//Se registra ESTAMOS SEGUROS DE DEVOLVER ESTO?
-		}else return -1;
+		solicitud.gestionarSolicitudReserva(gestorLocalidad);//Gestionamos la solicitud
+		if(solicitud.getHueco()!=null)//Una vez gestionada se comprueba si se ha podido asignar un hueco
+			numReserva = registroReservas.registrarReserva(solicitud);//Se registra devolviendo el número de la reserva
+		return numReserva;
 	}
 
 	public Reserva getReserva(int numReserva) {
-		//HECHO?
-		return registroReservas.obtenerReserva(numReserva);
+		return registroReservas.obtenerReserva(numReserva);//Empleamos el método correspondiente a la clase Reserva
 	}
 
 	//PRE: la plaza dada está libre y la reserva está validada
 	public void ocuparPlaza(int i, int j, int numPlaza, int numReserva, Vehiculo vehiculo) throws PlazaOcupada, ReservaInvalida {
-		//HECHO?
 		if(!esValidaReserva(i,j,numPlaza,numReserva,vehiculo.getMatricula())) //Valoramos si la reserva existe
 			throw new ReservaInvalida("Lo sentimos, su reserva es inválida");//En otro caso lanzamos excepción
 		Plaza plaza = getReserva(numReserva).getHueco().getPlaza();
 		if(plaza.getVehiculo()!=null)//Valoramos is la plaza está ocupada
 			throw new PlazaOcupada("Lo sentimos, la plaza seleccionada está ocupada");//Y en ese caso lanzamos excepción
-		plaza.setVehiculo(vehiculo);
+		plaza.setVehiculo(vehiculo);//En otro caso ocupamos la plaza con el vehículo
 	}
 
 
 	//TO-DO alumno opcional
 
 	public void desocuparPlaza(int numReserva) {
-		//HECHO?
-		getReserva(numReserva).liberarHuecoReservado();//Incovamos la reserva y liberamos el hueco
+		getReserva(numReserva).liberarHuecoReservado();//Liberamos la reserva del registroReservas
+		getReserva(numReserva).getGestorZona().liberarHueco(getReserva(numReserva).getHueco());//Libreamos el hueco del gestorHuecos y de los huecosReservados
+		getReserva(numReserva).getHueco().getPlaza().setVehiculo(null);//Quitamos finalmente el vehículo poniéndolo como null
 	}
 
 	public void anularReserva(int numReserva) {
-		//HECHO?
 		desocuparPlaza(numReserva);//Desocupamos la plaza
 		registroReservas.borrarReserva(numReserva);//Borramos la reserva del registro
 	}
@@ -97,8 +96,28 @@ public class ControladorReservas {
 		
 	// PRE (no es necesario comprobar): todas las solicitudes atendidas son válidas.
 	public IList<Integer> getReservasRegistradasDesdeListaEspera(int i, int j){
-		//HECHO?
-		IList<Integer> lista = new ArrayList<>();
-		return null;
+		IList<SolicitudReservaAnticipada> solicitudesSerAtendidas = gestorLocalidad.getSolicitudesAtendidasListaEspera(i, j);
+		IList<Integer> listaEnteros = new ArrayList<>();
+		
+		SolicitudReservaAnticipada solicitud;
+		int numReserva;
+		
+		for(int k=0; k<solicitudesSerAtendidas.size(); k++) {
+			solicitud = solicitudesSerAtendidas.get(k);
+			try {
+				numReserva = hacerReserva(solicitud);//Hacemos la reserva de la solicitud que puede ser atendida
+				listaEnteros.add(listaEnteros.size(), numReserva);//Añadimos el número de esta misma reserva
+			} catch (IndexOutOfBoundsException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SolicitudReservaInvalida e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+			
+		solicitudesSerAtendidas = null;//Una vez hecho todo el registro, declaramos null la lista de solicitudes que pueden ser atendidas
+		
+		return listaEnteros;
 	}
 }
