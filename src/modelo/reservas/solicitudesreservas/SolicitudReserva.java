@@ -18,6 +18,7 @@ public class SolicitudReserva {
 	private GestorZona gestorZona; // se inicializa al gestionar la solicitud
 	private Hueco hueco; // se deja a null hasta que se completa la reserva
 
+	//CONSTRUCTOR
 	protected SolicitudReserva(int i, int j, LocalDateTime tI, 
 			LocalDateTime tF, Vehiculo vehiculo) {
 		this.iZona = i;
@@ -72,16 +73,13 @@ public class SolicitudReserva {
 	//TO-DO alumno obligatorio
 	
 	public boolean esValida(GestorLocalidad gestorLocalidad) {
-		//HECHO?
 		return gestorLocalidad.existeZona(iZona, jZona) && //Comprobaoms si la zona existe
 				tInicial.compareTo(tFinal)<0 && !vehiculo.getSancionado();//Y si el tiempo de reserva es válido y el vehiculo no está sancionado
 	}
 	
 	public void gestionarSolicitudReserva(GestorLocalidad gestor) {
-		//HECHO?
-		setGestorZona(gestor.getGestorZona(iZona, jZona));
-		Hueco hueco = gestorZona.reservarHueco(tInicial, tFinal);//Según la zona dada, intentamos reservar
-		setHueco(hueco);
+		setGestorZona(gestor.getGestorZona(iZona, jZona));//Inicializamos el GestorZona
+		setHueco(gestorZona.reservarHueco(tInicial, tFinal));//Según la zona dada, intentamos reservar y guardamos el hueco en la solicitud
 	}
 
 }
