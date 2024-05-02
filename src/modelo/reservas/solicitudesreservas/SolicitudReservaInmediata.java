@@ -2,17 +2,13 @@ package modelo.reservas.solicitudesreservas;
 
 import java.time.LocalDateTime;
 
+import list.IList;
 import modelo.gestoresplazas.GestorLocalidad;
 import modelo.gestoresplazas.GestorZona;
 import modelo.vehiculos.Vehiculo;
 
 public class SolicitudReservaInmediata extends SolicitudReserva {
 
-	private int i;
-	private int j;
-	private LocalDateTime tI;
-	private LocalDateTime tF;
-	private Vehiculo vehiculo;
 	private int radio;
 
 	public SolicitudReservaInmediata(int i, int j, LocalDateTime tI,
@@ -24,19 +20,17 @@ public class SolicitudReservaInmediata extends SolicitudReserva {
 
 	@Override
 	public boolean esValida(GestorLocalidad gestor) {
-		boolean res = super.esValida(gestor);// Comprobamos por la clase padre si los atributos generales son válidos
-		if (res && radio > 0) {
-			int adicionalPorPosicionX = Math.abs(i - (int) (gestor.getRadioMaxI() / 2));
-			int adicionalPorPosicionY = Math.abs(j - (int) (gestor.getRadioMaxJ() / 2));
-			int extraPorEsquina = (adicionalPorPosicionX == adicionalPorPosicionY) ? 1 : 0;
-			if (radio <= gestor.getRadioMaxI() + adicionalPorPosicionX + extraPorEsquina
-					|| radio <= gestor.getRadioMaxJ() + adicionalPorPosicionY + extraPorEsquina) {
+		int ZonaI = getIZona();
+		int ZonaJ = getJZona();
+		boolean res = super.esValida(gestor) && radio > 0;// Comprobamos por la clase padre si los atributos generales
+															// son válidos
+		if (res) {
+			int maxRI = (gestor.getRadioMaxI() - (ZonaI) > ZonaI) ? gestor.getRadioMaxI() - (ZonaI) : ZonaI;
+			int maxRJ = (gestor.getRadioMaxJ() - (ZonaJ) > ZonaJ) ? gestor.getRadioMaxJ() - (ZonaJ) : ZonaJ;
+			if (radio <= maxRI + maxRJ)
 				res = true;
-			} else {
+			else
 				res = false;
-			}
-		} else {
-			res = false;
 		}
 		return res;
 	}
@@ -44,73 +38,75 @@ public class SolicitudReservaInmediata extends SolicitudReserva {
 	public void gestionarSolicitudReserva(GestorLocalidad gestor) {
 		super.gestionarSolicitudReserva(gestor);
 		if (getHueco() == null) {
-			GestorZona mejor = null; // zona candidata a ser escogida
-			double mejorPrecio = buscarPrecioMaximo(gestor); // precio de zona candidata a ser escogida
-			if (gestor.getGestorZona(i, j).existeHueco(tI, tF)) { // comprobamos si existe hueco en el centro
-				mejor = gestor.getGestorZona(i, j);
-				mejorPrecio = mejor.getPrecio();
+			boolean encontrado = false;
+			int distancia = 1;
+			while (!encontrado && distancia <= radio) {
+				IList<GestorZona> gestoresAEvaluar = preciosOrdenados(gestor, distancia);
+				int i;
+				for (i = 0; i < gestoresAEvaluar.size()
+						&& !gestoresAEvaluar.get(i).existeHueco(getTInicial(), getTFinal()); i++)
+					;
+				if (i < gestoresAEvaluar.size()) {
+					setGestorZona(gestoresAEvaluar.get(i));
+					setHueco(gestoresAEvaluar.get(i).reservarHueco(getTInicial(), getTFinal()));
+					encontrado = true;
+				}
+				distancia++;
 			}
-			for (int a = 1; a <= radio; a++) { // bucle que recorrera todas las zonas en el orden establecido
-				for (int b = 0, c = 0; b < a && c < a; b++, c++) {
-					if (chequeoAux(gestor, i - a + b, j + c, tI, tF, mejorPrecio)) {
-						mejor = gestor.getGestorZona(i - a + b, j + c); // cambiamos a la mejor opcion
-						mejorPrecio = mejor.getPrecio(); // definimos su precio como la barra a supera
-					}
-				}
-				for (int b = 0, c = 0; b < a && c < a; b++, c++) {
-					if (chequeoAux(gestor, i + b, j + a - c, tI, tF, mejorPrecio)) {
-						mejor = gestor.getGestorZona(i + b, j + a - c);
-						mejorPrecio = mejor.getPrecio();
-					}
-				}
-				for (int b = 0, c = 0; b < a && c < a; b++, c++) {
-					if (chequeoAux(gestor, i + a - b, j - c, tI, tF, mejorPrecio)) {
-						mejor = gestor.getGestorZona(i + a - b, j - c);
-						mejorPrecio = mejor.getPrecio();
-					}
-				}
-				for (int b = 0, c = 0; b < a && c < a; b++, c++) {
-					if (chequeoAux(gestor, i - b, j - a + c, tI, tF, mejorPrecio)) {
-						mejor = gestor.getGestorZona(i - b, j - a + c);
-						mejorPrecio = mejor.getPrecio();
-					}
-				}
-			}
-			if (mejor == null) { // en el caso que no existian huecos en ninguno, escogemos el centro para
-									// ponernos en lista de espera
-				System.out.println(
-						"No se pudo encontrar huecos disponibles en el centro determinado o en su radio de busqueda");
-			}
-			setGestorZona(mejor);
-			setHueco(mejor.reservarHueco(tI, tF)); // hacemos la reserva
 		}
 	}
 
-	public double buscarPrecioMaximo(GestorLocalidad gestor) {
-		double res = gestor.getGestorZona(0, 0).getPrecio();
-		for (int i = 0; i <= gestor.getRadioMaxJ(); i++) {
-			for (int j = 0; j <= gestor.getRadioMaxJ(); j++) {
-				if (res > gestor.getGestorZona(i, j).getPrecio()) {
-					res = gestor.getGestorZona(i, j).getPrecio();
-				}
+	public IList<GestorZona> preciosOrdenados(GestorLocalidad gestor, int distancia) {
+		IList<GestorZona> gestoresAEvaluar = null;
+		int i = getIZona();
+		int j = getJZona();
+		LocalDateTime tI = getTInicial();
+		LocalDateTime tF = getTFinal();
+		for (int b = 0, c = 0; b < distancia && c < distancia; b++, c++) {
+			if (chequeoAux(gestor, i - distancia + b, j + c, tI, tF)) {
+				ordenar(gestor, gestoresAEvaluar);
 			}
 		}
-		return res;
+		for (int b = 0, c = 0; b < distancia && c < distancia; b++, c++) {
+			if (chequeoAux(gestor, i + b, j + distancia - c, tI, tF)) {
+				ordenar(gestor, gestoresAEvaluar);
+			}
+		}
+		for (int b = 0, c = 0; b < distancia && c < distancia; b++, c++) {
+			if (chequeoAux(gestor, i + distancia - b, j - c, tI, tF)) {
+				ordenar(gestor, gestoresAEvaluar);
+			}
+		}
+		for (int b = 0, c = 0; b < distancia && c < distancia; b++, c++) {
+			if (chequeoAux(gestor, i - b, j - distancia + c, tI, tF)) {
+				ordenar(gestor, gestoresAEvaluar);
+			}
+		}
+		return gestoresAEvaluar;
 	}
 
-	public boolean chequeoAux(GestorLocalidad gestor, int coordX, int coordY, LocalDateTime tI, LocalDateTime tF,
-			double mejorPrecio) {
+	public boolean chequeoAux(GestorLocalidad gestor, int coordX, int coordY, LocalDateTime tI, LocalDateTime tF) {
 		boolean res = false;
 		if (coordX < 0 || coordX >= gestor.getRadioMaxI() || coordY < 0 || coordY >= gestor.getRadioMaxJ()) {
-			// comprobamos que estamos dentro del array de arrays que seria el gestor
-			// localidad
-			if (gestor.getGestorZona(coordX, coordY).existeHueco(tI, tF) &&
-					gestor.getGestorZona(coordX, coordY).getPrecio() < mejorPrecio) {
-				// chequeamos que exista hueco y que el precio sea el mejor
-				res = true;
-			}
+			// comprobamos que estamos dentro de la matriz que seria el gestor localidad
+			res = true;
 		}
 		return res;
+	}
+
+	public IList<GestorZona> ordenar(GestorLocalidad gestor, IList<GestorZona> gestoresAEvaluar) {
+		int pos;
+		int i = getIZona();
+		int j = getJZona();
+		for (pos = 0; pos < gestoresAEvaluar.size() &&
+				gestoresAEvaluar.get(pos).getPrecio() < gestor.getGestorZona(i, j).getPrecio(); pos++)
+			;
+		gestoresAEvaluar.add(pos, gestor.getGestorZona(i, j));
+		return gestoresAEvaluar;
+	}
+
+	public int distanciaManhattan(int x, int y) {
+		return Math.abs(getIZona() - x) + Math.abs(getJZona() + y);
 	}
 }
 /*
@@ -255,7 +251,7 @@ public class SolicitudReservaInmediata extends SolicitudReserva {
  * las zonas del mismo precio ordenadas
  * 
  * //Creamos un while que nos va a ordenar las zonas segun el orden de busqueda
- * while (k < 4 && zonasPrecio.size() > zonasPrecioOrdenadas.size()){
+ * while (k < 4 /&& zonasPrecio.size() > zonasPrecioOrdenadas.size()/){
  * for(int n=0; n < zonasPrecio.size(); n++){ //Comprobamos si hemos encontrado
  * alguna de las zonas
  * if(zonasPrecio.get(n).getI() == i && zonasPrecio.get(n).getJ() == j)
@@ -296,6 +292,6 @@ public class SolicitudReservaInmediata extends SolicitudReserva {
  * }
  * }
  * return zonasPrecioOrdenadas;
- * }
+ *     }
  * }
  */
