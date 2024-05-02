@@ -97,9 +97,9 @@ public class SolicitudReservaInmediata extends SolicitudReserva {
 	}
 
 	public void ordenar(IList<GestorZona> gestoresAEvaluar) {
-		int n = gestoresAEvaluar.size();
-		for (int i = 0; i < n - 1; i++) {
-			for (int j = 0; j < n - i - 1; j++) {
+		int n = gestoresAEvaluar.size() - 1;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n - i; j++) {
 				if (gestoresAEvaluar.get(j).getPrecio() > gestoresAEvaluar.get(j + 1).getPrecio()) {
 					GestorZona holder = gestoresAEvaluar.get(j);
 					gestoresAEvaluar.set(j, gestoresAEvaluar.get(j + 1));
