@@ -16,7 +16,6 @@ public class SolicitudReservaAnticipada extends SolicitudReserva{
 	//CONSTRUCTOR
 	public SolicitudReservaAnticipada(int i, int j, LocalDateTime tI, 
 			LocalDateTime tF, Vehiculo vehiculo) {
-		// HECHO?
 		super(i, j, tI, tF, vehiculo);//Inicializamos los atributos mediante el constructor de la clase padre
 	}
 	

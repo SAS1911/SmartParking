@@ -84,13 +84,19 @@ public class TestGestorZonaOpcional {
 		
 		gestor.liberarHueco(hueco);
 		
+		
+		
 		IList<SolicitudReservaAnticipada> lista = gestor.getSolicitudesAtendidasListaEspera();
-
 		// se deben atender las de car1 y car4 únicamente		
 		assertEquals("No se han atendido todas las solicitudes pendientes correctas", "[(Sol:0 1 00:30 02:00 car1),\n"
-				+ "(Sol:0 1 00:00 00:15 car4)]", lista.toString());		
+				+ "(Sol:0 1 00:00 00:15 car4)]", lista.toString());	
+		
+	
+		
 		assertEquals("No se ha actualizado la lista de espera correctamente", "[(Sol:0 1 00:45 01:00 car2),\n"
 				+ "(Sol:0 1 02:30 02:45 car3)]", gestor.getListaEspera());
+		
+
 	}
 
 

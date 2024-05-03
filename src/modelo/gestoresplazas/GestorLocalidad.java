@@ -29,7 +29,8 @@ public class GestorLocalidad {
 	}
 	
 	public boolean existeZona(int i, int j) {
-		return 0<=i && i<=getRadioMaxI() && 0<=j && j<=getRadioMaxJ(); //Debe ser mayor o igual que 0 y menor o igual que el radio máximo
+	
+		return 0<=i && i<gestoresZonas.length && 0<=j && j<gestoresZonas[0].length; //Debe ser mayor o igual que 0 y menor o igual que el radio máximo
 	}
 
 	public boolean existeHuecoReservado(Hueco hueco, int i, int j) {

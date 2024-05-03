@@ -34,7 +34,7 @@ public class TestGestorZonaOblig {
 	 */
 	@Test
 	public void testConst() {		
-
+		
 		assertEquals("No se ha inicializado correctamente el atributo de plazas", "[(0-null), (1-null), (2-null)]", gestor.getPlazas());
 
 		assertEquals("La lista de espera no está vacía", "[]", gestor.getListaEspera());
@@ -55,14 +55,15 @@ public class TestGestorZonaOblig {
 		//Primera reserva
 		LocalDateTime tI = LocalDateTime.of(2021, 10, 5, 1, 0);
 		LocalDateTime tF = LocalDateTime.of(2021, 10, 5, 2, 30);
-
+		
 		Hueco hueco = gestor.reservarHueco(tI, tF);
+		
 		assertEquals("La hora de inicio del hueco reservado no es correcta", tI, hueco.gettI());
 		assertEquals("La hora de final del hueco reservado no es correcta", tF, hueco.gettF());
 
 		assertTrue("No se ha guardado el hueco reservado en la lista de huecos reservados", 
 				gestor.getEstadoHuecosReservados().contains("01:00, 02:30"));
-
+		
 		assertEquals("No se ha actualizado correctamente el gestor de huecos", "[[(00:00, 01:00, (0-null)),\n"
 				+ "(00:00, 03:00, (1-null)),\n"
 				+ "(00:00, 03:00, (2-null))],\n"

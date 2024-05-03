@@ -12,7 +12,6 @@ import modelo.gestoresplazas.huecos.Plaza;
 import modelo.reservas.solicitudesreservas.SolicitudReservaAnticipada;
 
 public class GestorZona {
-	
 	private int iZona;
 	private int jZona;
 	private Plaza[] plazas;

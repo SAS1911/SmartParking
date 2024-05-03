@@ -113,11 +113,12 @@ public class TestSolicitudReservaAnticipadaOblig {
 				solicitud.getJZona()), solicitud.getGestorZona());
 		
 		Hueco hueco = solicitud.getHueco();
-		
+
 		assertTrue("No se ha guardado el hueco en la reserva", hueco != null);
 		
 		assertTrue("No se ha guardado el hueco reservado en el gestor de zona", gestorLocalidad.existeHuecoReservado(hueco, solicitud.getIZona(), 
 				solicitud.getJZona()));		
+
 	}
 	
 	/**

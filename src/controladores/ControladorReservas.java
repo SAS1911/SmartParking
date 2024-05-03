@@ -57,7 +57,11 @@ public class ControladorReservas {
 	public int hacerReserva(SolicitudReserva solicitud) throws SolicitudReservaInvalida {
 		int numReserva = -1;
 		if(!solicitud.esValida(gestorLocalidad)) {//En caso de ser inválida la solicitud
-			throw new SolicitudReservaInvalida ("Lo sentimos, su reserva es Inválida");//Lanzamos la excepción
+			throw new SolicitudReservaInvalida ("Lo sentimos, su solicitud de reserva es Inválida.\n"
+					+ "Pruebe a seleccionar:\n"
+					+ "1. Otra zona.\n"
+					+ "2. Otro intervalo de tiempo.\n"
+					+ "O asegúrese de que su vehículo no está sancionado.");//Lanzamos la excepción
 		}
 		solicitud.gestionarSolicitudReserva(gestorLocalidad);//Gestionamos la solicitud
 		if(solicitud.getHueco()!=null)//Una vez gestionada se comprueba si se ha podido asignar un hueco
@@ -72,10 +76,15 @@ public class ControladorReservas {
 	//PRE: la plaza dada está libre y la reserva está validada
 	public void ocuparPlaza(int i, int j, int numPlaza, int numReserva, Vehiculo vehiculo) throws PlazaOcupada, ReservaInvalida {
 		if(!esValidaReserva(i,j,numPlaza,numReserva,vehiculo.getMatricula())) //Valoramos si la reserva existe
-			throw new ReservaInvalida("Lo sentimos, su reserva es inválida");//En otro caso lanzamos excepción
+			throw new ReservaInvalida("Lo sentimos, su reserva es Inválida.\n"
+					+ "Pruebe a seleccionar:\n"
+					+ "1. Otra zona.\n"
+					+ "2. Otro intervalo de tiempo.\n"
+					+ "O asegúrese de que su vehículo no está sancionado.");//En otro caso lanzamos excepción
 		Plaza plaza = getReserva(numReserva).getHueco().getPlaza();
 		if(plaza.getVehiculo()!=null)//Valoramos is la plaza está ocupada
-			throw new PlazaOcupada("Lo sentimos, la plaza seleccionada está ocupada");//Y en ese caso lanzamos excepción
+			throw new PlazaOcupada("Lo sentimos, la plaza seleccionada está ocupada.\n"
+					+ "Pruebe a seleccionar otra:" + gestorLocalidad.getGestorZona(i, j).getPlazas());//Y en ese caso lanzamos excepción
 		plaza.setVehiculo(vehiculo);//En otro caso ocupamos la plaza con el vehículo
 	}
 
@@ -108,11 +117,13 @@ public class ControladorReservas {
 				numReserva = hacerReserva(solicitud);//Hacemos la reserva de la solicitud que puede ser atendida
 				listaEnteros.add(listaEnteros.size(), numReserva);//Añadimos el número de esta misma reserva
 			} catch (IndexOutOfBoundsException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			} catch (SolicitudReservaInvalida e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Lo sentimos, su solicitud de reserva es Inválida.\n"
+						+ "Pruebe a seleccionar:\n"
+						+ "1. Otra zona.\n"
+						+ "2. Otro intervalo de tiempo.\n"
+						+ "O asegúrese de que su vehículo no está sancionado.");
 			}
 		}
 			

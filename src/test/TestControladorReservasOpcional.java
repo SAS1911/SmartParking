@@ -89,15 +89,17 @@ public class TestControladorReservasOpcional {
 		Vehiculo car = new Vehiculo("7883CTB");
 
 		SolicitudReservaAnticipada solicitud = new SolicitudReservaAnticipada(i, j, tI, tF, car);
-
+		
 		// se hace una reserva
 		int numReserva = controlador.hacerReserva(solicitud);
+		
 
 		Reserva reserva = controlador.getReserva(numReserva);
 
 		// se anula la reserva
+		
 		controlador.anularReserva(numReserva);
-
+	
 		assertFalse("Se debería haber liberado el hueco reservado de la " + reserva, 
 				reserva.getGestorZona().existeHuecoReservado(reserva.getHueco()));
 
@@ -133,7 +135,7 @@ public class TestControladorReservasOpcional {
 					LocalDateTime tI = LocalDateTime.of(2021, 10, 5, 0, 0);
 					LocalDateTime tF = LocalDateTime.of(2021, 10, 5, 2, 30);
 					hueco = gestor.reservarHueco(tI, tF);
-
+					
 					LocalDateTime tI1 = LocalDateTime.of(2021, 10, 5, 2, 30);
 					LocalDateTime tF1 = LocalDateTime.of(2021, 10, 5, 3, 0);
 					gestor.reservarHueco(tI1, tF1);
